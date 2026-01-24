@@ -7,6 +7,18 @@
     transform: translateX(-25%) !important;
 }
 
+#themedropdown a {
+    color: #2196f3;
+    transition: all 0.3s ease;
+}
+
+#themedropdown a:hover {
+    color: #1e88e5;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+/* Dark Mode Theme Dropdown */
 .dark #themedropdown {
     background-color: transparent !important;
 }
@@ -17,17 +29,6 @@
 
 .dark #themedropdown li a {
     background-color: transparent !important;
-}
-
-#themedropdown a {
-    color: #2196f3;
-    transition: all 0.3s ease;
-}
-
-#themedropdown a:hover {
-    color: #1e88e5;
-    background-color: transparent;
-    transition: all 0.3s ease;
 }
 
 /* Dark Mode */
@@ -44,15 +45,9 @@
     background-color: #01143b !important;
 }
 
-<<<<<<< HEAD
-.dark #floatingWindows>.windowFrame {
-  border: 2px solid var(--border);
-  background-color: var(--bg);
-=======
 .dark #floatingWindows > .windowFrame {
-    border: 2px solid #000000;
-    background-color: #454545;
->>>>>>> 8d08ec0a (fix: improve dark mode contrast for tooltips and theme dropdown)
+    border: 2px solid var(--border);
+    background-color: var(--bg);
 }
 
 .dark .wfbtItem {
@@ -63,9 +58,9 @@
     color: #e8e8e8;
 }
 
-.dark #floatingWindows>.windowFrame>.wfWinBody .wfbWidget {
-  color: #ccc !important;
-  background-color: #3f3f44 !important;
+.dark #floatingWindows > .windowFrame > .wfWinBody .wfbWidget {
+    color: #ccc !important;
+    background-color: #3f3f44 !important;
 }
 
 .dark .popupMsg {
@@ -78,12 +73,7 @@
 }
 
 .dark #loading-image-container {
-<<<<<<< HEAD
-  background-color: var(--bg) !important;
-=======
-    background: #1a1a1a !important;
-    background-color: #1a1a1a !important;
->>>>>>> 8d08ec0a (fix: improve dark mode contrast for tooltips and theme dropdown)
+    background-color: var(--bg) !important;
 }
 
 .dark #loadingText {
@@ -94,15 +84,9 @@
     color: #fff;
 }
 
-<<<<<<< HEAD
 .modal-content {
-  background-color: var(--panel-bg);
-  color: var(--fg);
-=======
-.dark .modal-content {
-    background-color: #1c1c1c;
-    color: #fff;
->>>>>>> 8d08ec0a (fix: improve dark mode contrast for tooltips and theme dropdown)
+    background-color: var(--panel-bg);
+    color: var(--fg);
 }
 
 .dark #submitLilypond {
@@ -110,17 +94,10 @@
 }
 
 .dark #search,
-<<<<<<< HEAD
 .dark #helpfulSearch,
 .dark .ui-autocomplete {
-  background-color: #1c1c1c !important;
-  color: #fff !important;
-=======
-#helpfulSearch,
-.ui-autocomplete {
     background-color: #1c1c1c !important;
     color: #fff !important;
->>>>>>> 8d08ec0a (fix: improve dark mode contrast for tooltips and theme dropdown)
 }
 
 .dark .ui-autocomplete li:hover {
@@ -178,20 +155,21 @@
 .dark #confirmation-message {
     color: #e2e2e2;
 }
+
 body {
-  --border: #cccccc;
-  --bg: #ffffff;
-  --fg: #666666;
-  --panel-bg: #f5f5f5;
-  --accent: #2196F3;
+    --border: #cccccc;
+    --bg: #ffffff;
+    --fg: #666666;
+    --panel-bg: #f5f5f5;
+    --accent: #2196f3;
 }
 
 body.dark {
-  --border: #000000;
-  --bg: #1d1d20;
-  --fg: #e8e8e8;
-  --panel-bg: #1c1c1c;
-  --accent: #3fe0d1;
+    --border: #000000;
+    --bg: #1d1d20;
+    --fg: #e8e8e8;
+    --panel-bg: #1c1c1c;
+    --accent: #3fe0d1;
 }
 
 /* Your Custom Theme can go here if you don't want to modify the existing dark mode */
