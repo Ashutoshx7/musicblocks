@@ -37,7 +37,8 @@
    SPECIALINPUTS, STANDARDBLOCKHEIGHT, StatsWindow, STROKECOLORS,
    TENOR, TITLESTRING, Toolbar, Trashcan, TREBLE, Turtles, TURTLESVG,
    updatePluginObj, ZERODIVIDEERRORMSG, GRAND_G, GRAND_F,
-   SHARP, FLAT, buildScale, TREBLE_F, TREBLE_G, GIFAnimator
+   SHARP, FLAT, buildScale, TREBLE_F, TREBLE_G, GIFAnimator,
+   waitForReadiness
  */
 
 /*
@@ -1900,9 +1901,8 @@ class Activity {
                 // Queue and take first step.
                 if (!this.turtles.running()) {
                     this.logo.runLogoCommands();
-                    document.getElementById(
-                        "stop"
-                    ).style.color = this.toolbar.stopIconColorWhenPlaying;
+                    document.getElementById("stop").style.color =
+                        this.toolbar.stopIconColorWhenPlaying;
                 }
                 this.logo.step();
             } else {
@@ -2221,9 +2221,8 @@ class Activity {
                     i < this.palettes.dict[this.palettes.activePalette].protoList.length;
                     i++
                 ) {
-                    const name = this.palettes.dict[this.palettes.activePalette].protoList[i][
-                        "name"
-                    ];
+                    const name =
+                        this.palettes.dict[this.palettes.activePalette].protoList[i]["name"];
                     if (name in obj["FLOWPLUGINS"]) {
                         // eslint-disable-next-line no-console
                         console.log("deleting " + name);
@@ -4937,9 +4936,8 @@ class Activity {
                             }
                         }
                         staffBlocksMap[staffIndex].baseBlocks[0][0][firstnammedo][4][0] = blockId;
-                        staffBlocksMap[staffIndex].baseBlocks[repeatId.end][0][
-                            endnammedo
-                        ][4][1] = null;
+                        staffBlocksMap[staffIndex].baseBlocks[repeatId.end][0][endnammedo][4][1] =
+                            null;
 
                         blockId += 2;
                     } else {
@@ -5007,9 +5005,8 @@ class Activity {
                                 prevnameddo
                             ][4][1] = blockId;
                         } else {
-                            staffBlocksMap[staffIndex].repeatBlock[
-                                prevrepeatnameddo
-                            ][4][3] = blockId;
+                            staffBlocksMap[staffIndex].repeatBlock[prevrepeatnameddo][4][3] =
+                                blockId;
                         }
                         if (afternamedo !== -1) {
                             staffBlocksMap[staffIndex].baseBlocks[repeatId.end][0][
@@ -5859,8 +5856,8 @@ class Activity {
                                 let customName = "custom";
                                 if (myBlock.connections[1] !== null) {
                                     // eslint-disable-next-line max-len
-                                    customName = this.blocks.blockList[myBlock.connections[1]]
-                                        .value;
+                                    customName =
+                                        this.blocks.blockList[myBlock.connections[1]].value;
                                 }
                                 // eslint-disable-next-line no-console
                                 console.log(customName);
@@ -7692,14 +7689,24 @@ const activity = new Activity();
 
 require(["domReady!"], doc => {
     doBrowserCheck();
-    if (jQuery.browser.mozilla) {
-        setTimeout(() => {
-            activity.setupDependencies();
-            activity.domReady(doc);
-        }, 5000);
-    } else {
+
+    const initializeApp = () => {
         activity.setupDependencies();
         activity.domReady(doc);
+    };
+
+    if (jQuery.browser.mozilla) {
+        // Use readiness-based initialization instead of arbitrary 5-second delay
+        // This polls for critical dependencies (createjs, Howler, DOM elements)
+        // and initializes as soon as they're ready (min 500ms, max 10s)
+        waitForReadiness(initializeApp, {
+            maxWait: 10000, // Maximum wait time (fallback)
+            minWait: 500, // Minimum wait for stability
+            checkInterval: 100
+        });
+    } else {
+        // Chromium browsers don't need the delay
+        initializeApp();
     }
 });
 
