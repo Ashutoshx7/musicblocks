@@ -226,7 +226,8 @@
                                 alt="Close"
                             />
                         </div>
-                    </div>
+                     </div>
+
                     <div class="popupMsg" id="errorText" tabindex="-1">
                         <div class="contentWrapper">
                             <span id="errorTextContent"></span>
@@ -497,6 +498,35 @@
                             </ul>
 
                             <ul class="main right">
+                                <!-- Phase 2: Network & Sync Status Indicators -->
+                                <li>
+                                    <a
+                                        id="network-status"
+                                        class="tooltipped"
+                                        data-position="bottom"
+                                        data-tooltip="Offline"
+                                        role="button"
+                                        tabindex="0"
+                                    >
+                                        <i class="material-icons">cloud_off</i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        id="sync-status"
+                                        class="tooltipped synced"
+                                        data-position="bottom"
+                                        data-tooltip="Synced"
+                                        style="display: none"
+                                        role="button"
+                                        tabindex="0"
+                                    >
+                                        <i class="material-icons">cloud_done</i>
+                                        <span class="sync-text" style="font-size: 11px; margin-left: 4px"
+                                            >Synced</span
+                                        >
+                                    </a>
+                                </li>
                                 <li>
                                     <a
                                         id="FullScreen"
