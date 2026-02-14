@@ -79,7 +79,7 @@ function setupProgramBlocks(activity) {
 
             const url = args[1];
             const name = args[0];
-            const oldHeap = name in logo.turtleHeaps ? logo.turtleHeaps[turtle] : [];
+            const oldHeap = name in logo.turtleHeaps ? logo.turtleHeaps[name] : [];
 
             // Use async fetch to avoid blocking the UI
             fetch(url)
@@ -693,7 +693,7 @@ function setupProgramBlocks(activity) {
                 activity.save.download(
                     "json",
                     "data:text/json;charset-utf-8," +
-                        Turtle.DictActions.SerializeDict(target, turtle),
+                    Turtle.DictActions.SerializeDict(target, turtle),
                     args[1]
                 );
             }
@@ -1399,11 +1399,11 @@ function setupProgramBlocks(activity) {
             function ValidURL(str) {
                 const pattern = new RegExp(
                     "^(https?:\\/\\/)?" + // protocol
-                        "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
-                        "((\\d{1,3}\\.) {3}\\d{1,3}))" + // OR ip (v4) address
-                        "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
-                        "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
-                        "(\\#[-a-z\\d_]*)?$",
+                    "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
+                    "((\\d{1,3}\\.) {3}\\d{1,3}))" + // OR ip (v4) address
+                    "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+                    "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
+                    "(\\#[-a-z\\d_]*)?$",
                     "i"
                 ); // fragment locator
                 if (!pattern.test(str)) {
