@@ -353,7 +353,7 @@ class Palettes {
         this.activePalette = name; // used to delete plugins
     }
 
-    _showMenus() {}
+    _showMenus() { }
 
     _hideMenus() {
         // Hide the menu buttons and the palettes themselves.
@@ -432,8 +432,7 @@ class Palettes {
             element.classList.add("flex-palette");
             element.setAttribute(
                 "style",
-                `position: fixed; z-index: 1000; left: 0px; top: ${
-                    60 + this.top
+                `position: fixed; z-index: 1000; left: 0px; top: ${60 + this.top
                 }px; overflow-y: auto;`
             );
             element.innerHTML = `<div style="height:fit-content">
@@ -510,7 +509,7 @@ class Palettes {
             const actionBlock = this.dict["action"].protoList[blk];
             if (
                 ["nameddo", "namedcalc", "nameddoArg", "namedcalcArg"].indexOf(actionBlock.name) !==
-                    -1 &&
+                -1 &&
                 actionBlock.defaults[0] === actionName
             ) {
                 // Remove the palette protoList entry for this block.
@@ -1027,17 +1026,23 @@ class Palette {
                     img.style.top = pageY - img.offsetHeight / 2 + "px";
                 };
 
+                let rafTicking = false;
                 const onMouseMove = e => {
                     e.preventDefault();
-                    let x, y;
-                    if (e.type === "touchmove") {
-                        x = e.touches[0].clientX;
-                        y = e.touches[0].clientY;
-                    } else {
-                        x = e.pageX;
-                        y = e.pageY;
-                    }
-                    moveAt(x, y);
+                    if (rafTicking) return;
+                    rafTicking = true;
+                    requestAnimationFrame(() => {
+                        let x, y;
+                        if (e.type === "touchmove") {
+                            x = e.touches[0].clientX;
+                            y = e.touches[0].clientY;
+                        } else {
+                            x = e.pageX;
+                            y = e.pageY;
+                        }
+                        moveAt(x, y);
+                        rafTicking = false;
+                    });
                 };
                 onMouseMove(event);
 
@@ -1068,9 +1073,9 @@ class Palette {
                         b.modname,
                         event,
                         (x || that.activity.blocksContainer.x + 100) -
-                            that.activity.blocksContainer.x,
+                        that.activity.blocksContainer.x,
                         (y || that.activity.blocksContainer.y + 100) -
-                            that.activity.blocksContainer.y
+                        that.activity.blocksContainer.y
                     );
                 };
 
