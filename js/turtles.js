@@ -657,51 +657,41 @@ Turtles.TurtlesView = class {
 
         this.currentGrid = null; // currently selected grid
 
-        // Debounce timer for resize events
-        this._resizeTimer = null;
-
-        // Attach a debounced event listener to the 'resize' event
-        // This prevents rapid-fire resize calculations that can cause
-        // crashes when toggling DevTools or switching tabs.
-        window.addEventListener("resize", () => {
-            if (this._resizeTimer) {
-                clearTimeout(this._resizeTimer);
+        const handleResize = () => {
+            // Skip dimension updates when the tab is hidden
+            // (canvas reports 0x0 in background tabs)
+            if (document.hidden) {
+                return;
             }
 
-            this._resizeTimer = setTimeout(() => {
-                // Skip dimension updates when the tab is hidden
-                // (canvas reports 0x0 in background tabs)
-                if (document.hidden) {
-                    return;
-                }
+            // Call the updateDimensions function when resizing occurs
+            const screenWidth =
+                window.innerWidth ||
+                document.documentElement.clientWidth ||
+                document.body.clientWidth;
+            const screenHeight =
+                window.innerHeight ||
+                document.documentElement.clientHeight ||
+                document.body.clientHeight;
 
-                // Call the updateDimensions function when resizing occurs
-                const screenWidth =
-                    window.innerWidth ||
-                    document.documentElement.clientWidth ||
-                    document.body.clientWidth;
-                const screenHeight =
-                    window.innerHeight ||
-                    document.documentElement.clientHeight ||
-                    document.body.clientHeight;
+            // Guard against zero or invalid dimensions
+            if (screenWidth <= 0 || screenHeight <= 0) {
+                return;
+            }
 
-                // Guard against zero or invalid dimensions
-                if (screenWidth <= 0 || screenHeight <= 0) {
-                    return;
-                }
+            // Set a scaling factor to adjust the dimensions based on the screen size
+            const scale = Math.min(screenWidth / 1200, screenHeight / 900);
 
-                // Set a scaling factor to adjust the dimensions based on the screen size
-                const scale = Math.min(screenWidth / 1200, screenHeight / 900);
+            // Calculate the new dimensions
+            const newWidth = Math.round(1200 * scale);
+            const newHeight = Math.round(900 * scale);
 
-                // Calculate the new dimensions
-                const newWidth = Math.round(1200 * scale);
-                const newHeight = Math.round(900 * scale);
+            // Update the dimensions
+            this._w = newWidth;
+            this._h = newHeight;
+        };
 
-                // Update the dimensions
-                this._w = newWidth;
-                this._h = newHeight;
-            }, 150);
-        });
+        window.addEventListener("resize", debounce(handleResize, 150));
     }
 
     /**
@@ -911,10 +901,10 @@ Turtles.TurtlesView = class {
             container.setAttribute(
                 "style",
                 "position: absolute; right:" +
-                    (document.body.clientWidth - x) +
-                    "px;  top: " +
-                    y +
-                    "px;"
+                (document.body.clientWidth - x) +
+                "px;  top: " +
+                y +
+                "px;"
             );
             docById("buttoncontainerTOP").appendChild(container);
             return container;
@@ -1293,11 +1283,15 @@ Turtles.TurtlesView = class {
             __makeBoundary();
         }
 
+        if (this._canvasResizeHandler) {
+            window.removeEventListener("resize", this._canvasResizeHandler);
+            clearTimeout(this._resizeTimeout);
+        }
+
         // Debounce or throttle the resize event based on device capability
-        let resizeTimeout;
         let ticking = false;
 
-        window.addEventListener("resize", () => {
+        this._canvasResizeHandler = () => {
             const isHighEndDevice =
                 navigator.hardwareConcurrency && navigator.hardwareConcurrency >= 4;
 
@@ -1312,14 +1306,16 @@ Turtles.TurtlesView = class {
                     ticking = true;
                 }
             } else {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
+                clearTimeout(this._resizeTimeout);
+                this._resizeTimeout = setTimeout(() => {
                     handleCanvasResize();
                     __makeBoundary();
                     __makeBoundary2();
                 }, 150); // Wait 150ms after the last resize event to execute
             }
-        });
+        };
+
+        window.addEventListener("resize", this._canvasResizeHandler);
 
         return this;
     }

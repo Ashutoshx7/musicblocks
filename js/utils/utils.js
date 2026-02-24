@@ -39,7 +39,7 @@
    oneHundredToFraction, prepareMacroExports, preparePluginExports,
    processMacroData, processRawPluginData, rationalSum, rgbToHex,
    safeSVG, toFixed2, toTitleCase, windowHeight, windowWidth,
-    fnBrowserDetect, waitForReadiness
+    fnBrowserDetect, waitForReadiness, debounce, throttle
 */
 
 /**
@@ -55,6 +55,41 @@ const changeImage = (imgElement, from, to) => {
     if (imgElement.src === oldSrc) {
         imgElement.src = newSrc;
     }
+};
+
+/**
+ * Debounce function to limit the rate at which a function can fire.
+ * @function
+ * @param {Function} func - The function to debounce.
+ * @param {number} wait - The delay in milliseconds.
+ * @returns {Function} - The debounced function.
+ */
+const debounce = (func, wait) => {
+    let timeout;
+    return function (...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+};
+
+/**
+ * Throttle function to limit the rate at which a function can fire.
+ * @function
+ * @param {Function} func - The function to throttle.
+ * @param {number} limit - The time limit in milliseconds.
+ * @returns {Function} - The throttled function.
+ */
+const throttle = (func, limit) => {
+    let inThrottle;
+    return function (...args) {
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => (inThrottle = false), limit);
+        }
+    };
 };
 
 /**
@@ -1612,10 +1647,10 @@ let hexToRGB = hex => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
         ? {
-              r: parseInt(result[1], 16),
-              g: parseInt(result[2], 16),
-              b: parseInt(result[3], 16)
-          }
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        }
         : null;
 };
 

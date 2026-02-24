@@ -150,7 +150,6 @@ class Trashcan {
         this.updateContainerPosition();
 
         const self = this; // Capture the current instance of 'this'
-        let resizeTimeout;
 
         function delayedResize() {
             const newWidth = (window.innerWidth / self._scale - Trashcan.TRASHWIDTH) / 2;
@@ -161,10 +160,16 @@ class Trashcan {
             }
         }
 
-        window.addEventListener("resize", function () {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(delayedResize, 300); // Delayed execution using debouncing
-        });
+        if (this._resizeHandler) {
+            window.removeEventListener("resize", this._resizeHandler);
+            clearTimeout(this._resizeTimeout);
+        }
+
+        this._resizeHandler = function () {
+            clearTimeout(self._resizeTimeout);
+            self._resizeTimeout = setTimeout(delayedResize, 300); // Delayed execution using debouncing
+        };
+        window.addEventListener("resize", this._resizeHandler);
     }
 
     /**

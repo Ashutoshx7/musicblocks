@@ -327,15 +327,15 @@ function LegoWidget() {
         this._scale();
         this.activity.textMsg(
             _("LEGO Bricks - Phrase Maker with") +
+            " " +
+            this.rowLabels.length +
+            " " +
+            _(
+                "pitch rows (sorted by frequency, Instrument:" +
                 " " +
-                this.rowLabels.length +
-                " " +
-                _(
-                    "pitch rows (sorted by frequency, Instrument:" +
-                        " " +
-                        this.selectedInstrument +
-                        ")"
-                )
+                this.selectedInstrument +
+                ")"
+            )
         );
     };
 
@@ -1466,22 +1466,28 @@ function LegoWidget() {
     this._handleEyeDropperHover = function (event) {
         if (!this.eyeDropperMode || !this.colorPreviewTooltip) return;
 
-        // Get the color at the current position
-        const hoveredColor = this._sampleColorAtPosition(event.clientX, event.clientY);
+        if (this._eyeDropperRafTicking) return;
+        this._eyeDropperRafTicking = true;
 
-        if (hoveredColor) {
-            // Update tooltip content
-            this.colorSwatch.style.backgroundColor = this._getColorHex(hoveredColor.name);
-            this.colorPreviewText.textContent =
-                hoveredColor.name.charAt(0).toUpperCase() + hoveredColor.name.slice(1);
+        requestAnimationFrame(() => {
+            // Get the color at the current position
+            const hoveredColor = this._sampleColorAtPosition(event.clientX, event.clientY);
 
-            // Position tooltip near cursor
-            this.colorPreviewTooltip.style.left = event.clientX + 15 + "px";
-            this.colorPreviewTooltip.style.top = event.clientY - 40 + "px";
-            this.colorPreviewTooltip.style.display = "block";
-        } else {
-            this.colorPreviewTooltip.style.display = "none";
-        }
+            if (hoveredColor) {
+                // Update tooltip content
+                this.colorSwatch.style.backgroundColor = this._getColorHex(hoveredColor.name);
+                this.colorPreviewText.textContent =
+                    hoveredColor.name.charAt(0).toUpperCase() + hoveredColor.name.slice(1);
+
+                // Position tooltip near cursor
+                this.colorPreviewTooltip.style.left = event.clientX + 15 + "px";
+                this.colorPreviewTooltip.style.top = event.clientY - 40 + "px";
+                this.colorPreviewTooltip.style.display = "block";
+            } else {
+                this.colorPreviewTooltip.style.display = "none";
+            }
+            this._eyeDropperRafTicking = false;
+        });
     }.bind(this);
 
     /**
@@ -1557,13 +1563,14 @@ function LegoWidget() {
     this._makeImageDraggable = function (wrapper) {
         let isDragging = false;
         let startX, startY, initialX, initialY;
+        let rafTicking = false;
 
         // Set fixed dimensions for the wrapper
         wrapper.style.width = "100%";
         wrapper.style.height = "100%";
         wrapper.style.overflow = "hidden";
 
-        wrapper.onmousedown = e => {
+        const onMouseDown = e => {
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
@@ -1571,22 +1578,35 @@ function LegoWidget() {
             initialY = parseFloat(wrapper.style.top) || 0;
             wrapper.style.cursor = "grabbing";
             e.preventDefault();
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
         };
 
-        document.onmousemove = e => {
+        const onMouseMove = e => {
             if (!isDragging) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            wrapper.style.left = `${initialX + dx}px`;
-            wrapper.style.top = `${initialY + dy}px`;
+            if (rafTicking) return;
+            rafTicking = true;
+
+            requestAnimationFrame(() => {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                wrapper.style.left = `${initialX + dx}px`;
+                wrapper.style.top = `${initialY + dy}px`;
+                rafTicking = false;
+            });
         };
 
-        document.onmouseup = () => {
+        const onMouseUp = () => {
             if (isDragging) {
                 isDragging = false;
                 wrapper.style.cursor = "grab";
             }
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
         };
+
+        wrapper.addEventListener("mousedown", onMouseDown);
     };
 
     /**
@@ -1946,7 +1966,7 @@ function LegoWidget() {
                 x: this.instrumentButton.offsetLeft + this.instrumentButton.offsetWidth / 2,
                 y: this.instrumentButton.offsetTop + this.instrumentButton.offsetHeight / 2,
                 children: [], // Mock children array for setChildIndex
-                setChildIndex: (child, index) => {} // Mock function
+                setChildIndex: (child, index) => { } // Mock function
             },
 
             // Mock text object that the pie menu expects
@@ -2002,7 +2022,7 @@ function LegoWidget() {
             },
 
             // Mock methods needed by piemenu
-            updateCache: () => {},
+            updateCache: () => { },
             updateValue: newValue => {
                 // Update the instrument when selection is made
                 this.selectedInstrument = newValue;
@@ -2033,7 +2053,7 @@ function LegoWidget() {
             // Update the instrument when text is set by pie menu
             const newInstrument =
                 voiceValues[
-                    voiceLabels.findIndex(label => label.toLowerCase() === newText.toLowerCase())
+                voiceLabels.findIndex(label => label.toLowerCase() === newText.toLowerCase())
                 ] || newText.toLowerCase();
 
             this.selectedInstrument = newInstrument;
