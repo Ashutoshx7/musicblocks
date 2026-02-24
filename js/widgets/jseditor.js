@@ -327,12 +327,10 @@ class JSEditor {
                 tooltip.style.whiteSpace = "nowrap";
                 tooltip.textContent = tooltipText;
 
-                tooltip.style.top = `${
-                    rect.bottom + window.scrollY + (positionOfTooltip !== "bottom" ? -30 : 20)
-                }px`;
-                tooltip.style.left = `${
-                    rect.left + window.scrollX + (positionOfTooltip !== "bottom" ? -135 : 0)
-                }px`;
+                tooltip.style.top = `${rect.bottom + window.scrollY + (positionOfTooltip !== "bottom" ? -30 : 20)
+                    }px`;
+                tooltip.style.left = `${rect.left + window.scrollX + (positionOfTooltip !== "bottom" ? -135 : 0)
+                    }px`;
             });
 
             targetButton.addEventListener("mouseout", () => {
@@ -615,22 +613,30 @@ class JSEditor {
      */
     _setupDividerResize(divider, editorContainer, editorconsole, consolelabel) {
         let isResizing = false;
+        let rafTicking = false;
 
         const onMouseMove = e => {
             if (!isResizing) return;
-            const parentRect = this._editor.getBoundingClientRect();
-            const menubarHeight = this._menubar ? this._menubar.offsetHeight : 0;
-            const availableHeight = this._editor.clientHeight - menubarHeight;
-            const dynamicTop = parentRect.top + menubarHeight;
+            if (rafTicking) return;
+            rafTicking = true;
 
-            const newEditorHeight = e.clientY - dynamicTop;
-            const dividerHeight = divider.offsetHeight;
-            const consoleHeaderHeight = consolelabel.offsetHeight;
-            const newConsoleHeight =
-                availableHeight - newEditorHeight - dividerHeight - consoleHeaderHeight;
+            requestAnimationFrame(() => {
+                const parentRect = this._editor.getBoundingClientRect();
+                const menubarHeight = this._menubar ? this._menubar.offsetHeight : 0;
+                const availableHeight = this._editor.clientHeight - menubarHeight;
+                const dynamicTop = parentRect.top + menubarHeight;
 
-            editorContainer.style.flexBasis = `${newEditorHeight}px`;
-            editorconsole.style.flexBasis = `${newConsoleHeight}px`;
+                const newEditorHeight = e.clientY - dynamicTop;
+                const dividerHeight = divider.offsetHeight;
+                const consoleHeaderHeight = consolelabel.offsetHeight;
+                const newConsoleHeight =
+                    availableHeight - newEditorHeight - dividerHeight - consoleHeaderHeight;
+
+                editorContainer.style.flexBasis = `${newEditorHeight}px`;
+                editorconsole.style.flexBasis = `${newConsoleHeight}px`;
+
+                rafTicking = false;
+            });
         };
 
         const onMouseUp = () => {
@@ -747,55 +753,69 @@ class JSEditor {
             startLeft = rect.left;
             startTop = rect.top;
 
+            document.addEventListener("mousemove", doResize);
+            document.addEventListener("mouseup", stopResize);
+
             e.preventDefault();
             e.stopPropagation();
         };
 
+        let rafTicking = false;
+
         const doResize = e => {
             if (!isResizing) return;
+            if (rafTicking) return;
+            rafTicking = true;
 
-            const deltaX = e.clientX - startX;
-            const deltaY = e.clientY - startY;
+            requestAnimationFrame(() => {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
 
-            let newWidth = startWidth;
-            let newHeight = startHeight;
-            let newLeft = startLeft;
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                let newLeft = startLeft;
 
-            // Calculate new dimensions based on direction
-            if (resizeDirection.includes("right")) {
-                newWidth = Math.max(400, startWidth + deltaX);
-            }
-            if (resizeDirection.includes("left")) {
-                const widthDelta = startWidth - deltaX;
-                if (widthDelta >= 400) {
-                    newWidth = widthDelta;
-                    newLeft = startLeft + deltaX;
+                // Calculate new dimensions based on direction
+                if (resizeDirection.includes("right")) {
+                    newWidth = Math.max(400, startWidth + deltaX);
                 }
-            }
-            if (resizeDirection.includes("bottom")) {
-                newHeight = Math.max(300, startHeight + deltaY);
-            }
+                if (resizeDirection.includes("left")) {
+                    const widthDelta = startWidth - deltaX;
+                    if (widthDelta >= 400) {
+                        newWidth = widthDelta;
+                        newLeft = startLeft + deltaX;
+                    }
+                }
+                if (resizeDirection.includes("bottom")) {
+                    newHeight = Math.max(300, startHeight + deltaY);
+                }
 
-            // Apply new dimensions
-            windowFrame.style.width = newWidth + "px";
-            windowFrame.style.height = newHeight + "px";
+                // Apply new dimensions
+                windowFrame.style.width = newWidth + "px";
+                windowFrame.style.height = newHeight + "px";
 
-            if (resizeDirection.includes("left")) {
-                windowFrame.style.left = newLeft + "px";
-            }
+                if (resizeDirection.includes("left")) {
+                    windowFrame.style.left = newLeft + "px";
+                }
 
-            // Update editor content size
-            const editorDiv = this._editor;
-            if (editorDiv) {
-                editorDiv.style.width = newWidth + "px";
-                editorDiv.style.height = newHeight - 32 + "px"; // Subtract title bar height
-            }
+                // Update editor content size
+                const editorDiv = this._editor;
+                if (editorDiv) {
+                    editorDiv.style.width = newWidth + "px";
+                    editorDiv.style.height = newHeight - 32 + "px"; // Subtract title bar height
+                }
+
+                rafTicking = false;
+            });
         };
 
         const stopResize = () => {
             if (!isResizing) return;
             isResizing = false;
             resizeDirection = null;
+
+            document.removeEventListener("mousemove", doResize);
+            document.removeEventListener("mouseup", stopResize);
         };
 
         // Attach event listeners
@@ -804,9 +824,6 @@ class JSEditor {
         handles.bottom.addEventListener("mousedown", e => startResize(e, "bottom"));
         handles.bottomRight.addEventListener("mousedown", e => startResize(e, "bottom-right"));
         handles.bottomLeft.addEventListener("mousedown", e => startResize(e, "bottom-left"));
-
-        document.addEventListener("mousemove", doResize);
-        document.addEventListener("mouseup", stopResize);
     }
 
     /**
@@ -819,9 +836,15 @@ class JSEditor {
         const debugButtons = docById("debugButtons");
 
         if (codebox && codeLines && debugButtons) {
+            let rafTicking = false;
             codebox.addEventListener("scroll", () => {
-                codeLines.scrollTop = codebox.scrollTop;
-                debugButtons.scrollTop = codebox.scrollTop;
+                if (rafTicking) return;
+                rafTicking = true;
+                requestAnimationFrame(() => {
+                    codeLines.scrollTop = codebox.scrollTop;
+                    debugButtons.scrollTop = codebox.scrollTop;
+                    rafTicking = false;
+                });
             });
         }
     }
@@ -836,20 +859,24 @@ class JSEditor {
      */
     static logConsole(message, color) {
         if (color === undefined) color = "midnightblue";
-        if (docById("editorConsole")) {
-            if (docById("editorConsole").innerHTML !== "")
-                docById("editorConsole").innerHTML += "</br>";
-            docById("editorConsole").innerHTML += `<span style="color: ${color}">${message}</span>`;
+        const consoleEl = docById("editorConsole");
+        if (consoleEl) {
+            if (consoleEl.childNodes.length > 0) {
+                consoleEl.appendChild(document.createElement("br"));
+            }
+            const line = document.createElement("span");
+            line.style.color = color;
+            line.textContent = message;
+            consoleEl.appendChild(line);
         } else {
             // console.error("EDITOR MISSING!");
         }
-        // eslint-disable-next-line
-        console.log("%c" + message, `color: ${color}`);
     }
 
     static clearConsole() {
-        if (docById("editorConsole")) {
-            docById("editorConsole").innerHTML = "";
+        const consoleEl = docById("editorConsole");
+        if (consoleEl) {
+            consoleEl.textContent = "";
         }
     }
 
@@ -995,8 +1022,7 @@ class JSEditor {
         const currentLine = lines[insertIndex].trim();
         if (!currentLine.endsWith("{") && !currentLine.endsWith(";")) {
             JSEditor.logConsole(
-                `Cannot add breakpoint to line ${
-                    lineNumber + 1
+                `Cannot add breakpoint to line ${lineNumber + 1
                 }. Breakpoints can only be added after lines ending with '{' or ';'`,
                 "red"
             );
@@ -1009,8 +1035,7 @@ class JSEditor {
             (lines[insertIndex + 1] && lines[insertIndex + 1].trim() === "debugger;")
         ) {
             JSEditor.logConsole(
-                `Cannot add breakpoint to line ${
-                    lineNumber + 1
+                `Cannot add breakpoint to line ${lineNumber + 1
                 } because there is already a breakpoint on an adjacent line.`,
                 "red"
             );
@@ -1161,4 +1186,8 @@ class JSEditor {
 
         JSEditor.logConsole("Status window opened.", "green");
     }
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { JSEditor };
 }
