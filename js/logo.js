@@ -14,25 +14,26 @@
 /*
    global
 
-   _, Notation, Synth, instruments, instrumentsFilters,
+   Notation, Synth, instruments, instrumentsFilters,
    instrumentsEffects, Singer, Tone, CAMERAVALUE, doUseCamera,
    VIDEOVALUE, last, getIntervalDirection, getIntervalNumber,
    mixedNumber, rationalToFraction, doStopVideoCam, StatusMatrix,
-   getStatsFromNotation, delayExecution, DEFAULTVOICE, performanceTracker, window
+   getStatsFromNotation, delayExecution, DEFAULTVOICE, performanceTracker,
+   define, DEFAULTVOLUME, PREVIEWVOLUME, DEFAULTDELAY,
+   OSCVOLUMEADJUSTMENT, TONEBPM, TARGETBPM, TURTLESTEP, NOTEDIV,
+   MIN_HIGHLIGHT_DURATION_MS,
+   NOMICERRORMSG, NANERRORMSG, NOSTRINGERRORMSG, NOBOXERRORMSG,
+   NOACTIONERRORMSG, NOINPUTERRORMSG, NOSQRTERRORMSG,
+   ZERODIVIDEERRORMSG, EMPTYHEAPERRORMSG, POSNUMBER,
+   NOTATIONNOTE, NOTATIONDURATION, NOTATIONDOTCOUNT,
+   NOTATIONTUPLETVALUE, NOTATIONROUNDDOWN, NOTATIONINSIDECHORD,
+   NOTATIONSTACCATO
  */
 
 /*
    exported
 
-   Queue, Logo, LogoDependencies, DEFAULTVOLUME, PREVIEWVOLUME, DEFAULTDELAY,
-   OSCVOLUMEADJUSTMENT, TONEBPM, TARGETBPM, TURTLESTEP, NOTEDIV,
-   MIN_HIGHLIGHT_DURATION_MS,
-   NOMICERRORMSG, NANERRORMSG, NOSTRINGERRORMSG, NOBOXERRORMSG,
-   NOACTIONERRORMSG, NOINPUTERRORMSG, NOSQRTERRORMSG,
-   ZERODIVIDEERRORMSG, EMPTYHEAPERRORMSG, INVALIDPITCH, POSNUMBER,
-   NOTATIONNOTE, NOTATIONDURATION, NOTATIONDOTCOUNT,
-   NOTATIONTUPLETVALUE, NOTATIONROUNDDOWN, NOTATIONINSIDECHORD,
-   NOTATIONSTACCATO
+   Queue, LogoDependencies
  */
 
 // Constants moved to js/logoconstants.js to resolve circular dependency
@@ -57,6 +58,7 @@ class Queue {
     }
 }
 
+// eslint-disable-next-line no-redeclare
 class Logo {
     /**
      * @constructor
@@ -789,7 +791,6 @@ class Logo {
                         // Debug logging removed to avoid console noise in production
                         eval(logo.evalArgDict[logo.blockList[blk].name]);
                     } else {
-                        // eslint-disable-next-line no-console
                         console.error("I do not know how to " + logo.blockList[blk].name);
                     }
                     break;
@@ -1918,16 +1919,25 @@ class Logo {
                     }
 
                     if (logo.runningLilypond) {
-                        if (logo.collectingStats) {
-                            // console.debug("stats collection completed");
-                            logo.projectStats = logo.deps.utils.getStatsFromNotation(logo.activity);
-                            logo.activity.statsWindow.displayInfo(logo.projectStats);
-                        } else {
-                            // console.debug("saving lilypond output:");
-                            logo.activity.save.afterSaveLilypond();
+                        try {
+                            if (logo.collectingStats) {
+                                logo.projectStats = logo.deps.utils.getStatsFromNotation(
+                                    logo.activity
+                                );
+                                logo.activity.statsWindow.displayInfo(logo.projectStats);
+                            } else {
+                                logo.activity.save.afterSaveLilypond();
+                            }
+                        } catch (e) {
+                            console.error("Error generating Lilypond output:", e);
+                            logo.activity.errorMsg(
+                                _("Error generating Lilypond output. ") + e.message
+                            );
+                        } finally {
+                            logo.collectingStats = false;
+                            logo.runningLilypond = false;
+                            document.body.style.cursor = "default";
                         }
-                        logo.collectingStats = false;
-                        logo.runningLilypond = false;
                     } else if (logo.runningAbc) {
                         // console.debug("saving abc output:");
                         logo.activity.save.afterSaveAbc();
