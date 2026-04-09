@@ -1,3 +1,4 @@
+/* global MULTIPALETTES, platformColor, docById, TEXTWIDTH */
 /**
  * @license
  * MusicBlocks v3.7.0
@@ -16,8 +17,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
-/* global MULTIPALETTES, platformColor, docById, TEXTWIDTH */
 
 const { Palettes, initPalettes } = require("../palette");
 
@@ -101,6 +100,7 @@ describe("Palettes Class", () => {
             style: { visibility: "visible", top: "100px" },
             setAttribute: jest.fn(),
             addEventListener: jest.fn(),
+            focus: jest.fn(),
             children: [
                 {
                     children: [
@@ -127,6 +127,7 @@ describe("Palettes Class", () => {
                                         })),
                                         dataset: {},
                                         style: {},
+                                        dataset: {},
                                         addEventListener: jest.fn()
                                     }))
                                 }
@@ -145,6 +146,7 @@ describe("Palettes Class", () => {
                 classList: { add: jest.fn() },
                 appendChild: jest.fn(),
                 style: {},
+                dataset: {},
                 innerHTML: "",
                 childNodes: [{ style: {} }]
             })),
@@ -322,6 +324,7 @@ describe("Palettes Class", () => {
                     insertCell: jest.fn(),
                     dataset: {},
                     style: {},
+                    dataset: {},
                     addEventListener: jest.fn((event, handler) => {
                         handlers[event] = handler;
                     })

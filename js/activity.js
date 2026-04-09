@@ -90,6 +90,7 @@ let MYDEFINES = [
     // on demand when the widget is opened, saving ~3-5 MB of heap memory.
     // "Chart",
     "utils/utils",
+    "utils/retryWithBackoff",
     "activity/artwork",
     "widgets/status",
     "utils/munsell",
@@ -1237,7 +1238,7 @@ class Activity {
                         const protoblk = obj[0];
                         const paletteName = obj[1];
                         const protoName = obj[2];
-                        // eslint-disable-next-line no-prototype-builtins
+                         
                         if (that.blocks.protoBlockDict.hasOwnProperty(protoName)) {
                             that.palettes.dict[paletteName].makeBlockFromSearch(
                                 protoblk,
