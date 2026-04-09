@@ -592,6 +592,10 @@ function Synth() {
     this.temperamentChanged = (temperament, startingPitch) => {
         let startPitch = startingPitch;
         const t = getTemperament(temperament);
+        if (!t) {
+            console.error("Temperament not found: " + temperament);
+            return;
+        }
         const len = startPitch.length;
         const number = pitchToNumber(
             startPitch.substring(0, len - 1),
@@ -612,95 +616,22 @@ function Synth() {
 
         const frequency = Tone.Frequency(startPitch).toFrequency();
 
-        // Cache getNoteFromInterval results to avoid duplicate calls (performance optimization)
-        const intervalCache = {
-            "minor 2": getNoteFromInterval(startingPitch, "minor 2"),
-            "augmented 1": getNoteFromInterval(startingPitch, "augmented 1"),
-            "major 2": getNoteFromInterval(startingPitch, "major 2"),
-            "minor 3": getNoteFromInterval(startingPitch, "minor 3"),
-            "augmented 2": getNoteFromInterval(startingPitch, "augmented 2"),
-            "major 3": getNoteFromInterval(startingPitch, "major 3"),
-            "augmented 3": getNoteFromInterval(startingPitch, "augmented 3"),
-            "diminished 4": getNoteFromInterval(startingPitch, "diminished 4"),
-            "perfect 4": getNoteFromInterval(startingPitch, "perfect 4"),
-            "augmented 4": getNoteFromInterval(startingPitch, "augmented 4"),
-            "diminished 5": getNoteFromInterval(startingPitch, "diminished 5"),
-            "perfect 5": getNoteFromInterval(startingPitch, "perfect 5"),
-            "augmented 5": getNoteFromInterval(startingPitch, "augmented 5"),
-            "minor 6": getNoteFromInterval(startingPitch, "minor 6"),
-            "major 6": getNoteFromInterval(startingPitch, "major 6"),
-            "augmented 6": getNoteFromInterval(startingPitch, "augmented 6"),
-            "minor 7": getNoteFromInterval(startingPitch, "minor 7"),
-            "major 7": getNoteFromInterval(startingPitch, "major 7"),
-            "augmented 7": getNoteFromInterval(startingPitch, "augmented 7"),
-            "diminished 8": getNoteFromInterval(startingPitch, "diminished 8"),
-            "perfect 8": getNoteFromInterval(startingPitch, "perfect 8")
-        };
-
         this.noteFrequencies = {
             // note: [octave, Frequency]
-            [startingPitch.substring(0, len - 1)]: [Number(startingPitch.slice(-1)), frequency],
-            [intervalCache["minor 2"][0]]: [intervalCache["minor 2"][1], t["minor 2"] * frequency],
-            [intervalCache["augmented 1"][0]]: [
-                intervalCache["augmented 1"][1],
-                t["augmented 1"] * frequency
-            ],
-            [intervalCache["major 2"][0]]: [intervalCache["major 2"][1], t["major 2"] * frequency],
-            [intervalCache["minor 3"][0]]: [intervalCache["minor 3"][1], t["minor 3"] * frequency],
-            [intervalCache["augmented 2"][0]]: [
-                intervalCache["augmented 2"][1],
-                t["augmented 2"] * frequency
-            ],
-            [intervalCache["major 3"][0]]: [intervalCache["major 3"][1], t["major 3"] * frequency],
-            [intervalCache["augmented 3"][0]]: [
-                intervalCache["augmented 3"][1],
-                t["augmented 3"] * frequency
-            ],
-            [intervalCache["diminished 4"][0]]: [
-                intervalCache["diminished 4"][1],
-                t["diminished 4"] * frequency
-            ],
-            [intervalCache["perfect 4"][0]]: [
-                intervalCache["perfect 4"][1],
-                t["perfect 4"] * frequency
-            ],
-            [intervalCache["augmented 4"][0]]: [
-                intervalCache["augmented 4"][1],
-                t["augmented 4"] * frequency
-            ],
-            [intervalCache["diminished 5"][0]]: [
-                intervalCache["diminished 5"][1],
-                t["diminished 5"] * frequency
-            ],
-            [intervalCache["perfect 5"][0]]: [
-                intervalCache["perfect 5"][1],
-                t["perfect 5"] * frequency
-            ],
-            [intervalCache["augmented 5"][0]]: [
-                intervalCache["augmented 5"][1],
-                t["augmented 5"] * frequency
-            ],
-            [intervalCache["minor 6"][0]]: [intervalCache["minor 6"][1], t["minor 6"] * frequency],
-            [intervalCache["major 6"][0]]: [intervalCache["major 6"][1], t["major 6"] * frequency],
-            [intervalCache["augmented 6"][0]]: [
-                intervalCache["augmented 6"][1],
-                t["augmented 6"] * frequency
-            ],
-            [intervalCache["minor 7"][0]]: [intervalCache["minor 7"][1], t["minor 7"] * frequency],
-            [intervalCache["major 7"][0]]: [intervalCache["major 7"][1], t["major 7"] * frequency],
-            [intervalCache["augmented 7"][0]]: [
-                intervalCache["augmented 7"][1],
-                t["augmented 7"] * frequency
-            ],
-            [intervalCache["diminished 8"][0]]: [
-                intervalCache["diminished 8"][1],
-                t["diminished 8"] * frequency
-            ],
-            [intervalCache["perfect 8"][0]]: [
-                intervalCache["perfect 8"][1],
-                t["perfect 8"] * frequency
-            ]
+            [startingPitch.substring(0, len - 1)]: [Number(startingPitch.slice(-1)), frequency]
         };
+
+        for (const interval in t) {
+            if (
+                interval !== "pitchNumber" &&
+                interval !== "interval" &&
+                interval !== "octave" &&
+                typeof t[interval] === "number"
+            ) {
+                const noteInfo = getNoteFromInterval(startingPitch, interval);
+                this.noteFrequencies[noteInfo[0]] = [noteInfo[1], t[interval] * frequency];
+            }
+        }
 
         for (const key in this.noteFrequencies) {
             let note;
