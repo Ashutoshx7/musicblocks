@@ -1,0 +1,11 @@
+
+> musicblocks@3.4.1 dev
+> cross-env NODE_ENV=development nodemon index.js
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node index.js`[39m
+Music Blocks running at http://127.0.0.1:3000/
+Compression enabled
