@@ -127,7 +127,6 @@ describe("Palettes Class", () => {
                                         })),
                                         dataset: {},
                                         style: {},
-                                        dataset: {},
                                         addEventListener: jest.fn()
                                     }))
                                 }
@@ -324,7 +323,6 @@ describe("Palettes Class", () => {
                     insertCell: jest.fn(),
                     dataset: {},
                     style: {},
-                    dataset: {},
                     addEventListener: jest.fn((event, handler) => {
                         handlers[event] = handler;
                     })
