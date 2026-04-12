@@ -7505,6 +7505,14 @@ class Activity {
             requestAnimationFrame(() => widgetWindow.sendToCenter());
         };
 
+        /**
+         * Open the First Project Tutorial directly (starts at card 37)
+         * This can be called from anywhere to launch the tutorial
+         */
+        this.openFirstProjectTutorial = () => {
+            HelpWidget.openFirstProjectTutorial(this);
+        };
+
         /*
          * Shows about page
          */
@@ -9026,6 +9034,19 @@ class Activity {
 })();
 
 const activity = new Activity();
+// Register activity via the proper singleton context (window.activity is deprecated)
+ActivityContext.setActivity(activity);
+
+// Global function to open First Project Tutorial (starts at card 4)
+// Can be called from console or anywhere: openFirstProjectTutorial()
+window.openFirstProjectTutorial = function () {
+    const act = ActivityContext.getActivity();
+    if (act && act.openFirstProjectTutorial) {
+        act.openFirstProjectTutorial();
+    } else if (typeof HelpWidget !== "undefined") {
+        HelpWidget.openFirstProjectTutorial(act);
+    }
+};
 
 // Execute initialization once all RequireJS modules are loaded AND DOM is ready
 define(["domReady!"].concat(MYDEFINES), doc => {
